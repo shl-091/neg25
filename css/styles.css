@@ -1,9 +1,9 @@
-
 :root{
-  --m-brown:#8B6B5B;
-  --m-brown-2:#B79A86;
-  --m-blue:#6E8CA0;
-  --m-blue-2:#A4B6C2;
+  /* Morandi palette (muted, low saturation) */
+  --m-brown:#8B6B5B;     /* main brown */
+  --m-brown-2:#B79A86;   /* lighter brown */
+  --m-blue:#6E8CA0;      /* main blue */
+  --m-blue-2:#A4B6C2;    /* lighter blue */
   --m-green:#9BAA97;
   --m-rose:#B8A1A6;
   --m-sand:#D2C3B5;
@@ -25,7 +25,7 @@ body{
 
 #app{position:relative; height:100vh; width:100vw}
 
-/* language switch */
+/* language switch (moved to top-right) */
 .lang-switch{
   position:fixed; top:16px; right:16px; z-index:6;
 }
@@ -56,7 +56,7 @@ body{
 .b2{background:var(--m-brown-2); width:40vmax; height:40vmax; bottom:-12vmax; right:-10vmax; animation-delay:1s}
 .b3{background:var(--m-green); width:35vmax; height:35vmax; bottom:10vmax; left:15vmax; animation-delay:2s}
 .grain{
-  position:absolute; inset:-200px; pointer-events:none; background-image:url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"140\" height=\"140\" viewBox=\"0 0 140 140\"><filter id=\"n\"><feTurbulence type=\"fractalNoise\" baseFrequency=\"0.9\" numOctaves=\"2\" stitchTiles=\"stitch\"/></filter><rect width=\"100%\" height=\"100%\" filter=\"url(%23n)\" opacity=\"0.04\"/></svg>');
+  position:absolute; inset:-200px; pointer-events:none; background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 140 140"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.04"/></svg>');
 }
 
 @keyframes float{
@@ -72,7 +72,7 @@ body{
 .screen.active{display:block; animation:fadeIn .4s ease both}
 @keyframes fadeIn{from{opacity:0; transform:translate3d(0,6px,0)} to{opacity:1; transform:none}}
 
-/* landing */
+/* landing screen */
 .center-stack{
   position:absolute; inset:0;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -93,13 +93,12 @@ body{
   padding:6px 12px; border-radius:999px; box-shadow:0 3px 14px rgba(0,0,0,.12);
 }
 
-/* radial word cloud */
-.cloud{
-  position:absolute; inset:0; padding:0; overflow:hidden;
-}
-.cloud.radial{}
+/* word clouds container */
+.cloud{position:absolute; inset:0; overflow:hidden;}
+
+/* tags */
 .tag{
-  position:absolute; /* important for radial placement */
+  position:absolute; /* radial/ripple layout uses absolute positioning */
   display:flex; align-items:center; justify-content:center;
   border-radius:50%; background:var(--white); color:var(--ink);
   padding:16px; min-width:64px; min-height:64px; user-select:none;
@@ -110,13 +109,11 @@ body{
 .tag[data-size="s"]{width:64px; height:64px; font-size:12px}
 .tag[data-size="m"]{width:88px; height:88px; font-size:13px}
 .tag[data-size="l"]{width:110px; height:110px; font-size:15px; font-weight:600}
-.tag.selected{background:linear-gradient(135deg, var(--m-blue-2), var(--m-sand)); color:#1e1e1e}
 .tag:hover{transform:translateY(-3px) scale(1.02); box-shadow:0 14px 34px rgba(0,0,0,.14)}
 .tag .dot{
   position:absolute; width:8px; height:8px; border-radius:50%;
   background:var(--m-rose); top:8px; right:10px; opacity:0; transition:opacity .2s;
 }
-.tag.selected .dot{opacity:1}
 
 /* footer actions */
 .footer-actions{
@@ -175,6 +172,45 @@ body{
 /* hide back button on step1 */
 #screen-step1 .back{visibility:hidden}
 
+/* --- 强化选中态 & 汇聚动画用的幽灵标签 --- */
+.tag.selected{
+  background:linear-gradient(135deg, var(--m-blue-2), var(--m-sand));
+  color:#1e1e1e;
+  box-shadow:0 16px 40px rgba(0,0,0,.16);
+  outline:2px solid rgba(0,0,0,.06);
+}
+.tag.selected .dot{opacity:1}
 
-/* ensure clouds have enough inset space for rings and are not clipped by padding */
-.cloud{position:absolute; inset:0; overflow:hidden;}
+/* ghost clones that fly to center for recommendation */
+.ghost-tag{
+  position:fixed;
+  z-index:50;
+  border-radius:50%;
+  padding:0;
+  margin:0;
+  display:flex; align-items:center; justify-content:center;
+  background:inherit; color:inherit;
+  box-shadow:0 12px 30px rgba(0,0,0,.18);
+  pointer-events:none;
+  transition: transform 700ms cubic-bezier(.2,.8,.2,1), opacity 500ms ease;
+  will-change: transform, opacity;
+}
+
+/* 让词云层在头/脚层之上，但页脚的按钮仍然可点击 */
+.cloud { z-index: 3; }
+
+.step-head {
+  z-index: 2;
+  pointer-events: none;   /* 标题和进度不需要交互，让点击穿透 */
+}
+
+/* 页脚容器本身不拦截点击，只让按钮能点 */
+.footer-actions {
+  z-index: 4;
+  pointer-events: none;
+}
+.footer-actions .back,
+.footer-actions .skip,
+.footer-actions .next {
+  pointer-events: auto;   /* 恢复按钮点击 */
+}
